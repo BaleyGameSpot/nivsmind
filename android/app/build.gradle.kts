@@ -23,7 +23,6 @@ android {
         // Base URL - Update this with your actual server URL
         buildConfigField("String", "BASE_URL", "\"https://your-domain.com/\"")
         buildConfigField("String", "GOOGLE_CLIENT_ID", "\"YOUR_GOOGLE_CLIENT_ID\"")
-        buildConfigField("String", "REVENUECAT_API_KEY", "\"YOUR_REVENUECAT_KEY\"")
     }
 
     buildTypes {
@@ -113,10 +112,6 @@ dependencies {
 
     // Timber
     implementation(libs.timber)
-
-    // RevenueCat
-    implementation(libs.revenuecat)
-    implementation(libs.revenuecat.ui)
 
     // Debug
     debugImplementation(libs.androidx.ui.tooling)
