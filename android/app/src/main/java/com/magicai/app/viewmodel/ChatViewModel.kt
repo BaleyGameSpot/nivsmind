@@ -148,68 +148,68 @@ class ChatViewModel @Inject constructor(
                 val token = tokenManager.getToken().first()
                 val chatId = _uiState.value.currentChatId
 
-                val urlBuilder = StringBuilder("${BuildConfig.BASE_URL}api/aichat/chat-send")
-                    .append("?message=${java.net.URLEncoder.encode(message, "UTF-8")}")
-                    .append("&category_slug=${categorySlug}")
+                // Step 1: POST to save message and receive conver_id + message_id
+                val postBodyBuilder = okhttp3.FormBody.Builder()
+                    .add("prompt", message)
                 if (chatId != null) {
-                    urlBuilder.append("&chat_id=$chatId")
+                    postBodyBuilder.add("conver_id", chatId)
+                }
+                val postRequest = Request.Builder()
+                    .url("${BuildConfig.BASE_URL}api/aichat/chat-send")
+                    .post(postBodyBuilder.build())
+                    .addHeader("Authorization", "Bearer $token")
+                    .addHeader("Accept", "application/json")
+                    .build()
+
+                val postResponse = okHttpClient.newCall(postRequest).execute()
+                if (!postResponse.isSuccessful) {
+                    _uiState.update { state ->
+                        val updatedMessages = state.messages.map { msg ->
+                            if (msg.id == aiMessageId) {
+                                msg.copy(content = "Error: Unable to get response", isStreaming = false)
+                            } else msg
+                        }
+                        state.copy(messages = updatedMessages, isStreaming = false, errorMessage = "Failed to send message")
+                    }
+                    return@launch
                 }
 
-                val request = Request.Builder()
-                    .url(urlBuilder.toString())
+                val postJson = com.google.gson.JsonParser.parseString(postResponse.body!!.string()).asJsonObject
+                val converId = postJson.get("conver_id").asString
+                val messageId = postJson.get("message_id").asString
+
+                // Update chatId if this was a new chat
+                if (chatId == null) {
+                    _uiState.update { it.copy(currentChatId = converId) }
+                }
+
+                // Step 2: GET streaming response using conver_id and message_id
+                val getRequest = Request.Builder()
+                    .url("${BuildConfig.BASE_URL}api/aichat/chat-send?conver_id=$converId&message_id=$messageId")
                     .get()
                     .addHeader("Authorization", "Bearer $token")
                     .addHeader("Accept", "text/event-stream")
                     .build()
 
-                val response = okHttpClient.newCall(request).execute()
-                if (response.isSuccessful) {
-                    val source: BufferedSource = response.body!!.source()
+                val getResponse = okHttpClient.newCall(getRequest).execute()
+                if (getResponse.isSuccessful) {
+                    val source: BufferedSource = getResponse.body!!.source()
                     val sb = StringBuilder()
 
                     while (!source.exhausted()) {
                         val line = source.readUtf8Line() ?: break
-                        if (line.startsWith("data: ")) {
-                            val data = line.removePrefix("data: ")
-                            if (data == "[DONE]") break
-                            try {
-                                val json = com.google.gson.JsonParser.parseString(data).asJsonObject
-                                // Handle different response formats
-                                val content = when {
-                                    json.has("choices") -> {
-                                        val delta = json.getAsJsonArray("choices")
-                                            ?.get(0)?.asJsonObject
-                                            ?.get("delta")?.asJsonObject
-                                        delta?.get("content")?.asString ?: ""
-                                    }
-                                    json.has("text") -> json.get("text").asString
-                                    json.has("content") -> json.get("content").asString
-                                    else -> ""
+                        // Server sends raw text chunks, ends with "data: [DONE]"
+                        if (line.trimEnd() == "data: [DONE]") break
+                        if (line.isNotEmpty()) {
+                            sb.append(line)
+                            val currentContent = sb.toString()
+                            _uiState.update { state ->
+                                val updatedMessages = state.messages.map { msg ->
+                                    if (msg.id == aiMessageId) {
+                                        msg.copy(content = currentContent)
+                                    } else msg
                                 }
-
-                                // Handle chat_id from response
-                                if (json.has("chat_id") && _uiState.value.currentChatId == null) {
-                                    val newChatId = json.get("chat_id").asString
-                                    _uiState.update { it.copy(currentChatId = newChatId) }
-                                }
-
-                                if (content.isNotEmpty()) {
-                                    sb.append(content)
-                                    val currentContent = sb.toString()
-                                    _uiState.update { state ->
-                                        val updatedMessages = state.messages.map { msg ->
-                                            if (msg.id == aiMessageId) {
-                                                msg.copy(content = currentContent)
-                                            } else msg
-                                        }
-                                        state.copy(messages = updatedMessages)
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                // Non-JSON line, append raw
-                                if (data.isNotEmpty() && data != "[DONE]") {
-                                    sb.append(data)
-                                }
+                                state.copy(messages = updatedMessages)
                             }
                         }
                     }
@@ -230,7 +230,7 @@ class ChatViewModel @Inject constructor(
                                 msg.copy(content = "Error: Unable to get response", isStreaming = false)
                             } else msg
                         }
-                        state.copy(messages = updatedMessages, isStreaming = false, errorMessage = "Failed to send message")
+                        state.copy(messages = updatedMessages, isStreaming = false, errorMessage = "Failed to get response")
                     }
                 }
             } catch (e: Exception) {
