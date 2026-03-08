@@ -42,10 +42,9 @@ fun AppRoot() {
     val isLoggedIn by authViewModel.isLoggedIn.collectAsStateWithLifecycle()
     val navController = rememberNavController()
 
-    val startDestination = if (isLoggedIn) Screen.Home.route else Screen.Login.route
-
     AppNavigation(
         navController = navController,
-        startDestination = startDestination
+        startDestination = Screen.Splash.route,
+        isLoggedIn = isLoggedIn
     )
 }
