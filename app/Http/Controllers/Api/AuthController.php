@@ -329,6 +329,36 @@ class AuthController extends Controller
      *      ),
      * )
      */
+    public function login(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email'    => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        if (! Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            return response()->json(['error' => __('Invalid credentials')], 401);
+        }
+
+        $user  = Auth::user();
+        $token = $user->createToken('auth_token')->accessToken;
+
+        return response()->json([
+            'access_token' => $token,
+            'token_type'   => 'Bearer',
+            'user'         => [
+                'id'      => $user->id,
+                'name'    => $user->name,
+                'surname' => $user->surname,
+                'email'   => $user->email,
+            ],
+        ], 200);
+    }
+
     public function getSupportedLoginMethods(): JsonResponse
     {
         $setting = Setting::getCache();

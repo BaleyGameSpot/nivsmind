@@ -1,5 +1,7 @@
 package com.magicai.app.ui.screens.subscription
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -17,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -24,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.magicai.app.BuildConfig
 import com.magicai.app.data.api.ApiService
 import com.magicai.app.data.models.Plan
 import com.magicai.app.ui.components.LoadingScreen
@@ -170,10 +174,16 @@ fun SubscriptionScreen(
                 }
             } else {
                 items(uiState.plans) { plan ->
+                    val context = LocalContext.current
                     PlanCard(
                         plan = plan,
                         isCurrentPlan = plan.id == uiState.currentPlanId,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        onSubscribe = {
+                            val url = "${BuildConfig.BASE_URL}plans/${plan.id}/subscribe"
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                            context.startActivity(intent)
+                        }
                     )
                 }
             }
@@ -182,7 +192,7 @@ fun SubscriptionScreen(
 }
 
 @Composable
-fun PlanCard(plan: Plan, isCurrentPlan: Boolean, modifier: Modifier = Modifier) {
+fun PlanCard(plan: Plan, isCurrentPlan: Boolean, modifier: Modifier = Modifier, onSubscribe: () -> Unit = {}) {
     val isPopular = plan.name.contains("Pro", ignoreCase = true) ||
             plan.name.contains("Premium", ignoreCase = true)
 
@@ -275,7 +285,11 @@ fun PlanCard(plan: Plan, isCurrentPlan: Boolean, modifier: Modifier = Modifier) 
 
             if (!isCurrentPlan) {
                 Button(
+
+                    onClick = onSubscribe,
+
                     onClick = { /* Handle plan selection - integrate with PayPal */ },
+
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(

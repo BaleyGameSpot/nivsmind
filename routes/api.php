@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')
     ->group(function () {
         Route::post('register', 'App\Http\Controllers\Api\AuthController@register');
+        Route::post('login', 'App\Http\Controllers\Api\AuthController@login');
         Route::post('forgot-password', 'App\Http\Controllers\Api\AuthController@sendPasswordResetMail');
         Route::get('email/verify', 'App\Http\Controllers\Api\AuthController@emailConfirmationMail');
         Route::post('email/verify/resend', 'App\Http\Controllers\Api\AuthController@resend')->middleware('throttle:6,1');
