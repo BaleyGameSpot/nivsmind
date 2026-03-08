@@ -344,8 +344,15 @@ class AuthController extends Controller
             return response()->json(['error' => __('Invalid credentials')], 401);
         }
 
-        $user  = Auth::user();
-        $token = $user->createToken('auth_token')->accessToken;
+        $user = Auth::user();
+
+        try {
+            $token = $user->createToken('auth_token')->accessToken;
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Passport token creation failed: ' . $e->getMessage());
+
+            return response()->json(['error' => 'Authentication service not configured. Please contact support.'], 500);
+        }
 
         return response()->json([
             'access_token' => $token,
