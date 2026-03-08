@@ -285,7 +285,11 @@ fun PlanCard(plan: Plan, isCurrentPlan: Boolean, modifier: Modifier = Modifier, 
 
             if (!isCurrentPlan) {
                 Button(
+
                     onClick = onSubscribe,
+
+                    onClick = { /* Handle plan selection - integrate with PayPal */ },
+
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(

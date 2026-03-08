@@ -1,5 +1,5 @@
 [versions]
-agp = "8.5.2"
+agp = "8.7.3"
 kotlin = "2.0.21"
 ksp = "2.0.21-1.0.27"
 coreKtx = "1.13.1"
@@ -24,6 +24,10 @@ material3 = "1.3.0"
 lottie = "6.5.2"
 markdownRenderer = "0.6.1"
 timber = "5.0.1"
+
+=======
+paypal = "1.6.0"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -83,6 +87,12 @@ lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", versio
 
 # Timber Logging
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+
+
+
+# PayPal for payments
+paypal-web-payments = { group = "com.paypal.android", name = "paypal-web-payments", version.ref = "paypal" }
+paypal-card-payments = { group = "com.paypal.android", name = "card-payments", version.ref = "paypal" }
 
 
 [plugins]
