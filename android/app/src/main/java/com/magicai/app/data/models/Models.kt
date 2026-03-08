@@ -19,8 +19,9 @@ data class RegisterRequest(
 )
 
 data class AuthResponse(
-    val token: String?,
-    val type: String? = "Bearer",
+    @SerializedName("access_token") val token: String?,
+    @SerializedName("token_type") val type: String? = "Bearer",
+    val user: User? = null,
     val message: String? = null,
     val error: Any? = null,
     val status: String? = null
