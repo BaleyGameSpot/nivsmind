@@ -23,7 +23,7 @@ android {
         // Base URL - Update this with your actual server URL
         buildConfigField("String", "BASE_URL", "\"https://your-domain.com/\"")
         buildConfigField("String", "GOOGLE_CLIENT_ID", "\"YOUR_GOOGLE_CLIENT_ID\"")
-        buildConfigField("String", "REVENUECAT_API_KEY", "\"YOUR_REVENUECAT_KEY\"")
+        buildConfigField("String", "PAYPAL_CLIENT_ID", "\"YOUR_PAYPAL_CLIENT_ID\"")
     }
 
     buildTypes {
@@ -114,9 +114,9 @@ dependencies {
     // Timber
     implementation(libs.timber)
 
-    // RevenueCat
-    implementation(libs.revenuecat)
-    implementation(libs.revenuecat.ui)
+    // PayPal
+    implementation(libs.paypal.web.payments)
+    implementation(libs.paypal.card.payments)
 
     // Debug
     debugImplementation(libs.androidx.ui.tooling)
