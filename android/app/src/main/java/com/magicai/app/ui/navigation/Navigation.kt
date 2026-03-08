@@ -12,6 +12,7 @@ import androidx.navigation.navArgument
 import com.magicai.app.ui.screens.auth.ForgotPasswordScreen
 import com.magicai.app.ui.screens.auth.LoginScreen
 import com.magicai.app.ui.screens.auth.RegisterScreen
+import com.magicai.app.ui.screens.auth.SplashScreen
 import com.magicai.app.ui.screens.chat.ChatScreen
 import com.magicai.app.ui.screens.documents.DocumentsScreen
 import com.magicai.app.ui.screens.home.HomeScreen
@@ -26,6 +27,7 @@ import com.magicai.app.ui.screens.writer.WriterGenerateScreen
 import com.magicai.app.viewmodel.AuthViewModel
 
 sealed class Screen(val route: String) {
+    object Splash : Screen("splash")
     object Login : Screen("login")
     object Register : Screen("register")
     object ForgotPassword : Screen("forgot_password")
@@ -52,12 +54,24 @@ sealed class Screen(val route: String) {
 @Composable
 fun AppNavigation(
     navController: NavHostController,
-    startDestination: String
+    startDestination: String,
+    afterSplashDestination: String = startDestination
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
+        // Splash
+        composable(Screen.Splash.route) {
+            SplashScreen(
+                onFinished = {
+                    navController.navigate(afterSplashDestination) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         // Auth
         composable(Screen.Login.route) {
             LoginScreen(

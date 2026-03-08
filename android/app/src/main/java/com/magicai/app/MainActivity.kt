@@ -46,6 +46,7 @@ fun AppRoot() {
 
     AppNavigation(
         navController = navController,
-        startDestination = startDestination
+        startDestination = Screen.Splash.route,
+        afterSplashDestination = startDestination
     )
 }
