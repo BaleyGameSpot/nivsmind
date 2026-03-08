@@ -122,7 +122,7 @@ class SocialLoginController extends Controller
             $user->updateCredits(setting('freeCreditsUponRegistration', User::getFreshCredits()));
         }
 
-        $token = $user->createToken('google')->accessToken;
+        $token = $user->createToken('google')->plainTextToken;
 
         if ($token !== null) {
             return response()->json([
@@ -255,7 +255,7 @@ class SocialLoginController extends Controller
             $user->updateCredits(setting('freeCreditsUponRegistration', User::getFreshCredits()));
         }
 
-        $token = $user->createToken('apple')->accessToken;
+        $token = $user->createToken('apple')->plainTextToken;
         if ($token) {
             return response()->json([
                 'access_token' => $token,

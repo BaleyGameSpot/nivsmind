@@ -347,7 +347,7 @@ class AuthController extends Controller
         }
 
         try {
-            $token = $user->createToken('auth_token')->accessToken;
+            $token = $user->createToken('auth_token')->plainTextToken;
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Passport token creation failed: ' . $e->getMessage());
 
